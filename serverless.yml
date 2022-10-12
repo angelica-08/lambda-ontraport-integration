@@ -1,0 +1,77 @@
+service: lambda-ontraport-integration
+
+plugins:
+  - serverless-webpack
+
+package:
+  individually: true
+
+custom:
+  webpack:
+    packager: npm
+
+useDotenv: true
+
+provider:
+  name: aws
+  region: us-east-2
+  runtime: nodejs14.x
+  environment: ${file(config/env.${opt:stage, 'staging'}.json)}
+
+functions:
+  createTask:
+    handler: app/handler.webinarDateTransformAndSave   
+    maximumRetryAttempts: 2
+    maximumEventAge: 7200
+    memorySize: 512
+    timeout: 300
+    events:
+      - http:
+          path: contact/ever-webinar-dates
+          method: post
+          integration: aws
+          request:
+            passThrough: NEVER
+            template: 
+              application/json: ${file(methodRequestTemplate.yml)} 
+              application/x-www-form-urlencoded: ${file(methodRequestTemplate.yml)} 
+            parameters:
+              headers:
+                'X-Amz-Invocation-Type': true
+          response:
+            statusCodes:
+              200:
+                pattern: ''
+                template:
+                  application/json: ${file(methodResponse.yml)} 
+                  application/x-www-form-urlencoded: ${file(methodResponse.yml)} 
+
+  # updateAccessGranted:
+  #   handler: airtable/updateAccessGranted.handler    
+  #   maximumRetryAttempts: 2
+  #   maximumEventAge: 7200
+  #   memorySize: 512
+  #   timeout: 300
+  #   events:
+  #     - http:
+  #         path: airtable/update-access-granted
+  #         method: put
+  #         integration: aws
+  #         request:
+  #           passThrough: NEVER
+  #           template: 
+  #             application/json: ${file(methodRequestTemplate.yml)} 
+  #             application/x-www-form-urlencoded: ${file(methodRequestTemplate.yml)} 
+  #           parameters:
+  #             headers:
+  #               'X-Amz-Invocation-Type': true
+  #         response:
+  #           statusCodes:
+  #             200:
+  #               pattern: ''
+  #               template:
+  #                 application/json: ${file(methodResponse.yml)} 
+  #                 application/x-www-form-urlencoded: ${file(methodResponse.yml)}                   
+
+
+
