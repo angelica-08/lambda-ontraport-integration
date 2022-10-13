@@ -27,8 +27,7 @@ export class WebinarService {
       neededDateValues.minutesFromWebinar.toString()
     );
     //Update Contact
-    // const response = await OntraportAPI.updateContact(ontraParams)
-    //  return response
+     await OntraportAPI.updateContact(ontraParams)
     return neededDateValues;
   }
 }
